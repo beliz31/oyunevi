@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OyunEvi — Bilgi Yarışması</title>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <style>
+    .game-layout { display:grid; grid-template-columns:240px 1fr; min-height:100vh; }
+    .game-main   { padding:32px; display:flex; flex-direction:column; align-items:center; position:relative; overflow:hidden; }
+    .orb1 { width:400px;height:400px;background:#0077b6;opacity:0.08;filter:blur(100px);top:-100px;right:-80px; }
+    .orb2 { width:300px;height:300px;background:#00b4d8;opacity:0.07;filter:blur(80px);bottom:-60px;left:-40px; }
+
+    .game-topbar { width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;z-index:2;position:relative; }
+    .back-btn { display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px 14px;font-size:13px;color:#8888aa;cursor:pointer;font-family:inherit; }
+    .back-btn:hover { color:#f0f0ff; }
+
+    /* PROGRESS BAR */
+    .progress-wrap { width:100%;max-width:560px;margin-bottom:28px;z-index:2;position:relative; }
+    .progress-info { display:flex;justify-content:space-between;font-size:12px;color:#555577;margin-bottom:8px; }
+    .progress-bar  { height:4px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden; }
+    .progress-fill { height:100%;background:linear-gradient(90deg,#0077b6,#00b4d8);border-radius:4px;transition:width 0.4s ease; }
+
+    /* TIMER */
+    .timer-wrap { display:flex;align-items:center;gap:10px;margin-bottom:24px;z-index:2;position:relative; }
+    .timer-circle {
+      width:52px;height:52px;border-radius:50%;
+      background:rgba(0,119,182,0.1);border:2px solid rgba(0,119,182,0.3);
+      display:flex;align-items:center;justify-content:center;
+      font-size:18px;font-weight:900;color:#60c8ff;
+      transition:border-color 0.3s;
+    }
+    .timer-circle.danger { border-color:rgba(230,57,70,0.5);color:#ff8a94;background:rgba(230,57,70,0.1); }
+
+    /* QUESTION */
+    .question-card {
+      background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+      border-radius:16px;padding:24px 28px;width:100%;max-width:560px;
+      margin-bottom:20px;z-index:2;position:relative;
+    }
+    .q-category { font-size:10px;color:#0077b6;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:600; }
+    .q-text { font-size:18px;font-weight:700;color:#f0f0ff;line-height:1.4; }
+
+    /* ANSWERS */
+    .answers { display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:560px;z-index:2;position:relative; }
+    .answer-btn {
+      background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+      border-radius:12px;padding:14px 18px;font-size:14px;font-weight:600;
+      color:#f0f0ff;cursor:pointer;font-family:inherit;text-align:left;
+      transition:all 0.15s;display:flex;align-items:center;gap:10px;
+    }
+    .answer-btn:hover:not(:disabled) { background:rgba(0,119,182,0.15);border-color:rgba(0,119,182,0.35); }
+    .answer-btn:disabled { cursor:default; }
+    .answer-btn.correct { background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.4);color:#4ade80; }
+    .answer-btn.wrong   { background:rgba(230,57,70,0.12);border-color:rgba(230,57,70,0.3);color:#ff8a94; }
+    .answer-letter {
+      width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,0.06);
+      display:flex;align-items:center;justify-content:center;font-size:12px;
+      font-weight:700;color:#555577;flex-shrink:0;
+    }
+    .answer-btn.correct .answer-letter { background:rgba(34,197,94,0.2);color:#4ade80; }
+    .answer-btn.wrong   .answer-letter { background:rgba(230,57,70,0.2);color:#ff8a94; }
+
+    /* SCORE */
+    .score-row { display:flex;gap:16px;margin-bottom:20px;z-index:2;position:relative; }
+    .score-chip { background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:8px 16px;font-size:12px;color:#666688;display:flex;align-items:center;gap:6px; }
+    .score-chip span { font-weight:700;color:#f0f0ff; }
+
+    /* RESULT */
+    .game-over { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);z-index:200;align-items:center;justify-content:center; }
+    .game-over.show { display:flex; }
+    .go-card { background:#0f0f22;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:40px 36px;text-align:center;animation:modalPop 0.3s cubic-bezier(.34,1.56,.64,1) both;width:400px;max-width:90vw; }
+    @keyframes modalPop { from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);} }
+    .go-icon  { font-size:52px;margin-bottom:12px; }
+    .go-title { font-size:24px;font-weight:900;color:#f0f0ff;margin-bottom:8px; }
+    .go-score { font-size:42px;font-weight:900;color:#60c8ff;margin-bottom:4px; }
+    .go-sub   { font-size:13px;color:#555577;margin-bottom:24px; }
+    .go-btns  { display:flex;gap:10px; }
+    .go-btn   { flex:1;padding:12px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;border:none; }
+    .go-btn-primary { background:#0077b6;color:#fff;box-shadow:0 4px 16px rgba(0,119,182,0.3); }
+    .go-btn-ghost   { background:rgba(255,255,255,0.05);color:#8888aa;border:1px solid rgba(255,255,255,0.1); }
+  </style>
+</head>
+<body>
+<div class="game-layout">
+  <aside class="sidebar">
+    <div class="logo"><div class="logo-icon">🎮</div><span>OyunEvi</span></div>
+    <div class="menu-label">Oyun</div>
+    <nav class="menu">
+      <a class="menu-item" href="../index.html"><div class="menu-icon">🏠</div>Ana Sayfa</a>
+      <a class="menu-item" href="asmaca.html"><div class="menu-icon">🪢</div>Adam Asmaca</a>
+      <a class="menu-item" href="uno.html"><div class="menu-icon">🃏</div>UNO</a>
+      <a class="menu-item active" href="#"><div class="menu-icon">💡</div>Bilgi Yarışması</a>
+    </nav>
+    <div class="sidebar-spacer"></div>
+    <div class="online-box">
+      <div class="online-row"><span class="pulse-dot"></span><span class="online-count" id="onlineCount">—</span></div>
+      <div class="online-sub">şu an oynuyor</div>
+    </div>
+  </aside>
+
+  <main class="game-main">
+    <div class="orb orb1" style="position:absolute;border-radius:50%;pointer-events:none;z-index:0;"></div>
+    <div class="orb orb2" style="position:absolute;border-radius:50%;pointer-events:none;z-index:0;"></div>
+
+    <div class="game-topbar">
+      <button class="back-btn" onclick="window.location.href='../index.html'">← Geri</button>
+      <div style="font-size:16px;font-weight:800;color:#f0f0ff;z-index:2;position:relative;">💡 Bilgi Yarışması</div>
+      <div style="width:80px;"></div>
+    </div>
+
+    <div class="score-row">
+      <div class="score-chip">Puan: <span id="scoreDisplay">0</span></div>
+      <div class="score-chip">Doğru: <span id="correctCount">0</span></div>
+      <div class="score-chip">Yanlış: <span id="wrongCount">0</span></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span id="qNum">Soru 1/10</span>
+        <span id="qCat">—</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:10%"></div></div>
+    </div>
+
+    <div class="timer-wrap">
+      <div class="timer-circle" id="timerCircle">15</div>
+      <div style="font-size:12px;color:#555577;">saniye kaldı</div>
+    </div>
+
+    <div class="question-card">
+      <div class="q-category" id="qCategory">—</div>
+      <div class="q-text" id="qText">Yükleniyor...</div>
+    </div>
+
+    <div class="answers" id="answers"></div>
+  </main>
+</div>
+
+<div class="game-over" id="gameOver">
+  <div class="go-card">
+    <div class="go-icon" id="goIcon">🏆</div>
+    <div class="go-title">Yarışma Bitti!</div>
+    <div class="go-score" id="goScore">0</div>
+    <div class="go-sub" id="goSub">puan</div>
+    <div class="go-btns">
+      <button class="go-btn go-btn-primary" onclick="startGame()">Tekrar Oyna</button>
+      <button class="go-btn go-btn-ghost" onclick="window.location.href='../index.html'">Ana Sayfa</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {cat:'Coğrafya',   q:'Türkiye\'nin başkenti neresidir?',              a:['Ankara','İstanbul','İzmir','Bursa'],           correct:0},
+  {cat:'Bilim',      q:'Işık hızı yaklaşık kaç km/s\'dir?',             a:['300.000','150.000','450.000','200.000'],        correct:0},
+  {cat:'Tarih',      q:'Osmanlı Devleti hangi yıl kurulmuştur?',        a:['1299','1453','1071','1326'],                    correct:0},
+  {cat:'Spor',       q:'FIFA Dünya Kupası kaç yılda bir oynanır?',      a:['4','2','3','5'],                                correct:0},
+  {cat:'Sanat',      q:'Mona Lisa\'yı kim yapmıştır?',                  a:['Leonardo da Vinci','Michelangelo','Raphael','Picasso'], correct:0},
+  {cat:'Bilim',      q:'DNA\'nın açılımı nedir?',                       a:['Deoksiribonükleik Asit','Difüzyon Nükleik Asit','Derin Nükleer Atom','Dinamik Nükleotit Asidi'], correct:0},
+  {cat:'Coğrafya',   q:'Dünyanın en büyük okyanusu hangisidir?',        a:['Pasifik','Atlantik','Hint','Arktik'],           correct:0},
+  {cat:'Matematik',  q:'Pi sayısının ilk 3 hanesi nedir?',              a:['3.14','2.71','1.41','3.16'],                    correct:0},
+  {cat:'Sinema',     q:'Titanic filmini kim yönetmiştir?',              a:['James Cameron','Steven Spielberg','Christopher Nolan','Ridley Scott'], correct:0},
+  {cat:'Teknoloji',  q:'www\'nin açılımı nedir?',                       a:['World Wide Web','World Wire Web','Wide World Web','Web World Wide'], correct:0},
+  {cat:'Biyoloji',   q:'İnsanda kaç çift kromozom bulunur?',            a:['23','22','24','46'],                            correct:0},
+  {cat:'Tarih',      q:'İstanbul\'un fethinin tarihi nedir?',           a:['1453','1299','1071','1683'],                    correct:0},
+];
+
+const LETTERS = ['A','B','C','D'];
+const TOTAL_Q = 10;
+
+let currentQ    = 0;
+let score       = 0;
+let correctCnt  = 0;
+let wrongCnt    = 0;
+let timer       = null;
+let timeLeft    = 15;
+let questions   = [];
+let answered    = false;
+
+function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+
+function startGame() {
+  questions  = shuffle(QUESTIONS).slice(0, TOTAL_Q);
+  currentQ   = 0; score = 0; correctCnt = 0; wrongCnt = 0;
+  document.getElementById('scoreDisplay').textContent  = 0;
+  document.getElementById('correctCount').textContent  = 0;
+  document.getElementById('wrongCount').textContent    = 0;
+  document.getElementById('gameOver').classList.remove('show');
+  showQuestion();
+}
+
+function showQuestion() {
+  if (currentQ >= TOTAL_Q) { endGame(); return; }
+  answered = false;
+  const q = questions[currentQ];
+
+  document.getElementById('qNum').textContent      = `Soru ${currentQ+1}/${TOTAL_Q}`;
+  document.getElementById('qCat').textContent      = q.cat;
+  document.getElementById('qCategory').textContent = q.cat;
+  document.getElementById('qText').textContent     = q.q;
+  document.getElementById('progressFill').style.width = ((currentQ+1)/TOTAL_Q*100) + '%';
+
+  // Cevap butonları
+  const container = document.getElementById('answers');
+  container.innerHTML = '';
+  const shuffledAnswers = shuffle(q.a.map((text, i) => ({text, isCorrect: i === q.correct})));
+
+  shuffledAnswers.forEach((ans, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.innerHTML = `<span class="answer-letter">${LETTERS[i]}</span>${ans.text}`;
+    btn.onclick = () => pickAnswer(btn, ans.isCorrect, container);
+    container.appendChild(btn);
+  });
+
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(timer);
+  timeLeft = 15;
+  const circle = document.getElementById('timerCircle');
+  circle.textContent = timeLeft;
+  circle.classList.remove('danger');
+
+  timer = setInterval(() => {
+    timeLeft--;
+    circle.textContent = timeLeft;
+    if (timeLeft <= 5) circle.classList.add('danger');
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      if (!answered) timeUp();
+    }
+  }, 1000);
+}
+
+function pickAnswer(btn, isCorrect, container) {
+  if (answered) return;
+  answered = true;
+  clearInterval(timer);
+
+  // Tüm butonları göster
+  container.querySelectorAll('.answer-btn').forEach(b => {
+    b.disabled = true;
+    // Doğruyu bul
+    const text = b.querySelector('.answer-letter').nextSibling?.textContent || b.textContent.substring(1);
+    const qData = questions[currentQ];
+    const correctText = qData.a[qData.correct];
+    if (b.textContent.includes(correctText)) b.classList.add('correct');
+  });
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    const bonus = Math.max(0, timeLeft) * 5 + 50;
+    score += bonus;
+    correctCnt++;
+    document.getElementById('scoreDisplay').textContent  = score;
+    document.getElementById('correctCount').textContent  = correctCnt;
+  } else {
+    btn.classList.add('wrong');
+    wrongCnt++;
+    document.getElementById('wrongCount').textContent = wrongCnt;
+  }
+
+  setTimeout(() => { currentQ++; showQuestion(); }, 1400);
+}
+
+function timeUp() {
+  answered = true;
+  const container = document.getElementById('answers');
+  const qData = questions[currentQ];
+  const correctText = qData.a[qData.correct];
+  container.querySelectorAll('.answer-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent.includes(correctText)) b.classList.add('correct');
+  });
+  wrongCnt++;
+  document.getElementById('wrongCount').textContent = wrongCnt;
+  setTimeout(() => { currentQ++; showQuestion(); }, 1400);
+}
+
+function endGame() {
+  clearInterval(timer);
+  const pct = Math.round(correctCnt / TOTAL_Q * 100);
+  const icon = pct >= 80 ? '🏆' : pct >= 60 ? '🎉' : pct >= 40 ? '😊' : '📚';
+  document.getElementById('goIcon').textContent  = icon;
+  document.getElementById('goScore').textContent = score;
+  document.getElementById('goSub').textContent   = `puan · ${correctCnt}/${TOTAL_Q} doğru`;
+  document.getElementById('gameOver').classList.add('show');
+}
+
+document.getElementById('onlineCount').textContent = Math.floor(Math.random()*30+10) + ' kişi';
+startGame();
+</script>
+</body>
+</html>

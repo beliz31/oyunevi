@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OyunEvi — Arkadaşlarla Oyna</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>"/>
+</head>
+<body>
+
+<div class="site">
+
+  <!-- ── SOL PANEL ── -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">🎮</div>
+      <span>OyunEvi</span>
+    </div>
+
+    <div class="menu-label">Menü</div>
+    <nav class="menu">
+      <a class="menu-item active" href="index.html">
+        <div class="menu-icon">🏠</div>
+        Ana Sayfa
+      </a>
+      <a class="menu-item" href="#oyunlar">
+        <div class="menu-icon">🎲</div>
+        Oyunlar
+      </a>
+      <a class="menu-item" href="#skor">
+        <div class="menu-icon">🏆</div>
+        Skor Tablosu
+      </a>
+      <a class="menu-item" href="#nasil">
+        <div class="menu-icon">❓</div>
+        Nasıl Oynanır?
+      </a>
+    </nav>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="online-box">
+      <div class="online-row">
+        <span class="pulse-dot"></span>
+        <span class="online-count" id="onlineCount">—</span>
+      </div>
+      <div class="online-sub">şu an oynuyor</div>
+    </div>
+  </aside>
+
+  <!-- ── SAĞ ALAN ── -->
+  <main class="content">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="topbar-btn tb-ghost" id="joinBtn">🔑 Odaya Katıl</button>
+      </div>
+      <button class="topbar-btn tb-red" id="createBtn">+ Oyun Oluştur</button>
+    </div>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-tag">✦ ücretsiz &nbsp;·&nbsp; kayıtsız &nbsp;·&nbsp; hemen oyna</div>
+      <h1>Birlikte<br><span class="glow">daha eğlenceli.</span></h1>
+      <p class="hero-desc">Oda kodunu paylaş, arkadaşlarını davet et.<br>İndirme yok, kayıt yok — sadece oyna.</p>
+    </section>
+
+    <!-- OYUNLAR -->
+    <div class="cards-label" id="oyunlar">Oyunlar</div>
+    <div class="cards-row">
+
+      <a class="game-row card--uno" href="games/uno.html">
+        <div class="row-icon ico--uno">🃏</div>
+        <div class="row-info">
+          <div class="row-name">UNO</div>
+          <div class="row-desc">Klasik kart savaşı. Son kart kazandırır.</div>
+        </div>
+        <div class="row-right">
+          <span class="row-players">2–8 oyuncu</span>
+          <span class="row-tag rt--uno">Çok Oyunculu</span>
+        </div>
+        <div class="row-arrow">›</div>
+      </a>
+
+      <a class="game-row card--adam" href="games/asmaca.html">
+        <div class="row-icon ico--adam">🪢</div>
+        <div class="row-info">
+          <div class="row-name">Adam Asmaca</div>
+          <div class="row-desc">Harfleri tahmin et, kelimeyi bul.</div>
+        </div>
+        <div class="row-right">
+          <span class="row-players">1–2 oyuncu</span>
+          <span class="row-tag rt--adam">Tek / Çok</span>
+        </div>
+        <div class="row-arrow">›</div>
+      </a>
+
+      <a class="game-row card--bilgi" href="games/bilgi.html">
+        <div class="row-icon ico--bilgi">💡</div>
+        <div class="row-info">
+          <div class="row-name">Bilgi Yarışması</div>
+          <div class="row-desc">Kim daha çok biliyor? Soru soru kazan.</div>
+        </div>
+        <div class="row-right">
+          <span class="row-players">1–8 oyuncu</span>
+          <span class="row-tag rt--bilgi">Tek / Çok</span>
+        </div>
+        <div class="row-arrow">›</div>
+      </a>
+
+    </div>
+  </main>
+</div>
+
+<!-- ODA KODU MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div class="modal-icon" id="modalIcon">🎮</div>
+    <h2 class="modal-title" id="modalTitle">Oyun Oluştur</h2>
+    <p class="modal-sub" id="modalSub">Bir oyun seç, oda kodunu arkadaşlarınla paylaş.</p>
+
+    <!-- Oyun Oluştur içeriği -->
+    <div id="createContent">
+      <div class="modal-game-list">
+        <div class="modal-game-item" data-game="uno" onclick="selectGame(this)">
+          <span class="mgi-icon">🃏</span>
+          <span class="mgi-name">UNO</span>
+        </div>
+        <div class="modal-game-item" data-game="asmaca" onclick="selectGame(this)">
+          <span class="mgi-icon">🪢</span>
+          <span class="mgi-name">Adam Asmaca</span>
+        </div>
+        <div class="modal-game-item" data-game="bilgi" onclick="selectGame(this)">
+          <span class="mgi-icon">💡</span>
+          <span class="mgi-name">Bilgi Yarışması</span>
+        </div>
+      </div>
+
+      <div class="modal-name-row">
+        <input type="text" class="modal-input" id="playerNameCreate" placeholder="Adın nedir?" maxlength="16"/>
+      </div>
+
+      <button class="modal-btn" id="startCreateBtn" onclick="createRoom()">Oda Oluştur →</button>
+    </div>
+
+    <!-- Odaya Katıl içeriği -->
+    <div id="joinContent" style="display:none">
+      <div class="modal-name-row">
+        <input type="text" class="modal-input" id="roomCodeInput" placeholder="Oda kodunu gir (6 hane)" maxlength="6" style="text-align:center; letter-spacing:6px; text-transform:uppercase; font-size:22px;"/>
+      </div>
+      <div class="modal-name-row">
+        <input type="text" class="modal-input" id="playerNameJoin" placeholder="Adın nedir?" maxlength="16"/>
+      </div>
+      <button class="modal-btn" onclick="joinRoom()">Odaya Katıl →</button>
+    </div>
+
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
